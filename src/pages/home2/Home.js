@@ -1,21 +1,12 @@
-import React, { useState, useEffect, withStyles } from "react";
-import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import CardActionArea from "@material-ui/core/CardActionArea";
-import CardMedia from "@mui/material/CardMedia";
-import CssBaseline from "@mui/material/CssBaseline";
-import Grid from "@mui/material/Grid";
-import Typography from "@mui/material/Typography";
-import Container from "@mui/material/Container";
-// import { createTheme, ThemeProvider, useTheme } from "@mui/material/styles";
-import CardHeader from "@mui/material/CardHeader";
-import Avatar from "@mui/material/Avatar";
-import IconButton, { IconButtonProps } from "@mui/material/IconButton";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import ShareIcon from "@mui/icons-material/Share";
-import CommentIcon from "@mui/icons-material/Comment";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+import React, { useState, useEffect } from "react";
+// import { notes } from "../data/db";
+import Grid from "@material-ui/core/Grid";
+import Paper from "@material-ui/core/Paper";
+import { Container } from "@material-ui/core";
+import MasonryCard from "./MasonryCard";
+import Masonry from "react-masonry-css";
+
+import BookmarkIcon from '@mui/icons-material/Bookmark';
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { FacebookShareButton, TwitterShareButton } from "react-share";
@@ -25,21 +16,16 @@ import Lightbox from "react-image-lightbox";
 import "react-image-lightbox/style.css";
 import Link from "@mui/material/Link";
 import _ from "lodash";
-
+import moment from "moment";
 import PanelComment from "./PanelComment";
 import PopupSnackbar from "./PopupSnackbar";
 import Footer from "./Footer";
 import SearchBar from "./SearchBar";
 import Pagination from "./Pagination";
-
 import Detail from "./Detail";
-
+import { socket } from "../../SocketioClient";
 import DialogLogin from "./DialogLogin";
-
 import { getList } from "../../components/provider/DataProvider";
-
-const cards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-// const theme = createTheme();
 
 const images = [
   "//placekitten.com/1500/500",
@@ -49,16 +35,21 @@ const images = [
 ];
 
 const Home = (props) => {
+  const [note, setNote] = useState([]);
+
+  const [datas, setDatas] = useState([]);
+  const [total, setTotal] = useState(0)
+
   const navigate = useHistory();
   const [keywordSearch, setKeywordSearch] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-
   const [dialogLoginOpen, setDialogLoginOpen] = useState(false);
 
   const [lightbox, setLightbox] = useState({
     isOpen: false,
-    photoIndex: 0
+    photoIndex: 0,
+    images: []
   });
 
   const [panelComment, setPanelComment] = useState({
@@ -68,12 +59,21 @@ const Home = (props) => {
 
   const [anchorElSetting, setAnchorElSetting] = useState(null);
   const [anchorElShare, setAnchorElShare] = useState(null);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState({open: false, message:""});
 
-  // DataProvider
-  useEffect(async () => {
-    console.log("useEffect :", await getList());
+  useEffect(async() => {
+    // setNote(notes);
+
+    let {data, total} = await getList("posts", {})
+    setDatas(data)
+    setTotal(total)
   }, []);
+
+  const breakpoints = {
+    default: 3,
+    1100: 2,
+    700: 1
+  };
 
   const handleAnchorElSettingOpen = (index, event) => {
     setAnchorElSetting({ [index]: event.currentTarget });
@@ -92,7 +92,7 @@ const Home = (props) => {
   };
 
   const snackbarClick = () => {
-    setSnackbarOpen(true);
+    setSnackbar({...snackbar, open: true});
   };
 
   const [state, setState] = React.useState({
@@ -102,21 +102,80 @@ const Home = (props) => {
     right: false
   });
 
-  const toggleDrawer = (anchor, open) => (event) => {
-    if (
-      event &&
-      event.type === "keydown" &&
-      (event.key === "Tab" || event.key === "Shift")
-    ) {
-      return;
-    }
+  const menuShare = (index) =>{
+    return  <Menu
+              anchorEl={anchorElShare && anchorElShare[index]}
+              keepMounted
+              open={anchorElShare && Boolean(anchorElShare[index])}
+              onClose={(e)=>handleAnchorElShareClose()}
+              // onClose={()=>{
+              //     console.log("Menu onClose")
+              // }}
+              getContentAnchorEl={null}
+              anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "center"
+              }}
+              transformOrigin={{
+                  vertical: "top",
+                  horizontal: "center"
+              }}
+              MenuListProps={{
+                  "aria-labelledby": "lock-button",
+                  role: "listbox"
+              }}
+              >
+              <MenuItem onClose={(e)=>handleAnchorElShareClose()}>
+                  <FacebookShareButton
+                  url={"https://peing.net/ja/"}
+                  quote={"quotequotequotequote"}
+                  hashtag={"#hashtag"}
+                  description={"aiueo"}
+                  className="Demo__some-network__share-button"
+                  >
+                  <FacebookIcon size={32} round /> Facebook
+                  </FacebookShareButton>
+              </MenuItem>{" "}
+              <MenuItem onClose={(e)=>handleAnchorElShareClose()}>
+                  <TwitterShareButton
+                  title={"test"}
+                  url={"https://peing.net/ja/"}
+                  hashtags={["hashtag1", "hashtag2"]}
+                  >
+                  <TwitterIcon size={32} round />
+                  Twitter
+                  </TwitterShareButton>
+              </MenuItem>
+            </Menu>
+  }
 
-    setState({ ...state, [anchor]: open });
-  };
+  const menuSetting = (index) =>{
+    return  <Menu
+              anchorEl={anchorElSetting && anchorElSetting[index]}
+              keepMounted
+              open={anchorElSetting && Boolean(anchorElSetting[index])}
+              onClose={handleAnchorElSettingClose}
+              getContentAnchorEl={null}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "center"
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "center"
+              }}
+              MenuListProps={{
+                "aria-labelledby": "lock-button",
+                role: "listbox"
+              }}
+            >
+              <MenuItem onClick={handleAnchorElSettingClose}>
+                Report
+              </MenuItem>
+            </Menu>
+  }
 
   return (
-    // <ThemeProvider theme={theme}>
-    //   <CssBaseline />
     <div>
       <div>
         <SearchBar
@@ -134,266 +193,55 @@ const Home = (props) => {
             }
           }}
         />
-        <Container sx={{ py: 2 }} maxWidth="xl">
-          {/* End hero unit */}
-          <Grid container spacing={1} alignItems="center">
-            {_.map(cards, (value, key) => (
-              <Grid item key={value} xs={6} sm={4} md={3}>
-                <Card>
-                  {/* <CardHeader
-                    // avatar={
-                    //   <Avatar
-                    //     sx={{ bgcolor: red[500] }}
-                    //     aria-label="recipe"
-                    //     src="/static/images/avatar/1.jpg"
-                    //   />
-                    // }
-                    action={
-                      <IconButton aria-label="settings">
-                        <MoreVertIcon
-                          onClick={(e) => handleAnchorElSettingOpen(key, e)}
-                        />
+    <Container>
+      <Masonry
+        breakpointCols={breakpoints}
+        className="my-masonry-grid"
+        columnClassName="my-masonry-grid_column"
+      >
+        {datas.map(
+          (n, index) => {
+            return (
+              <div key={n.id}>
+                <MasonryCard 
+                  n={n} 
+                  index={index} 
+                  onPanelComment={(data)=>{
+                    setPanelComment(data)
+                  }}
+                  onSnackbar={async(data)=>{
+                    // setSnackbar(data)
 
-                        <Menu
-                          anchorEl={anchorElSetting && anchorElSetting[key]}
-                          keepMounted
-                          open={
-                            anchorElSetting && Boolean(anchorElSetting[key])
-                          }
-                          onClose={handleAnchorElSettingClose}
-                          getContentAnchorEl={null}
-                          anchorOrigin={{
-                            vertical: "bottom",
-                            horizontal: "center"
-                          }}
-                          transformOrigin={{
-                            vertical: "top",
-                            horizontal: "center"
-                          }}
-                          MenuListProps={{
-                            "aria-labelledby": "lock-button",
-                            role: "listbox"
-                          }}
-                        >
-                          <MenuItem onClick={handleAnchorElSettingClose}>
-                            Report
-                          </MenuItem>{" "}
-                        </Menu>
-                      </IconButton>
-                    }
-                    // title="Shrimp and Chorizo Paella"
-                    // subheader="September 14, 2016"
-                    onClick={() => {
-                      console.log("CardHeader");
-                    }}
-                  /> */}
-                  {/* <CardActionArea> */}
-                  {/* <CardActionArea> */}
-                  <CardMedia
-                    component="img"
-                    height="194"
-                    image="https://png.pngtree.com/element_our/20190531/ourlarge/pngtree-cartoon-cute-hamster-png-transparent-bottom-image_1305367.jpg"
-                    alt="Paella dish"
-                    onClick={() => {
-                      console.log("vnnm : ", props);
+                    await socket().emit('follow', {test: "1234"}, (values)=>{
+                      // console.log(error);
+                      console.log(values);
 
-                      props.handleText();
+                      setSnackbar({open: true, message:"Follow"});
+                    });
+                  }}
+                  onLightbox={(data)=>{
+                    setLightbox(data)
+                  }}
 
-                      setLightbox({ isOpen: true, photoIndex: 0 });
-                    }}
+                  onAnchorElShareOpen={(index, e)=>{
+                    handleAnchorElShareOpen(index, e)
+                  }}
+                 
+                  onAnchorElSettingOpen={(index, e)=>{
+                    handleAnchorElSettingOpen(index, e)
+                  }}
                   />
-                  {/* <CardActionArea> */}
-                  <CardContent
-                    onClick={() => {
-                      navigate.push("detail");
-                    }}
-                  >
-                    <Typography
-                      variant="subtitle2"
-                      gutterBottom
-                      component="div"
-                    >
-                      Title
-                    </Typography>
-                    <Typography>
-                      This impressive paella is a perfect party
-                    </Typography>
-                  </CardContent>
-                  <CardContent
-                    onClick={() => {
-                      navigate.push("detail");
-                    }}
-                  >
-                    <Typography
-                      variant="subtitle2"
-                      gutterBottom
-                      component="div"
-                    >
-                      Detail
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      This impressive paella is a perfect party dish and a fun
-                      meal to cook together with your guests. Add 1 cup of
-                      frozen peas along with the mussels, if you like.
-                    </Typography>
-                  </CardContent>
 
-                  <CardContent>
-                    <Typography
-                      variant="subtitle2"
-                      gutterBottom
-                      component="div"
-                      display="inline"
-                    >
-                      Date :
-                    </Typography>
-                    <Typography display="inline">September 14, 2016</Typography>
-                  </CardContent>
-                  <CardContent>
-                    <Typography
-                      variant="subtitle2"
-                      gutterBottom
-                      component="div"
-                      display="inline"
-                    >
-                      Name :
-                    </Typography>
-                    <Link href="#" underline="hover">
-                      {"Somkid Simajarn"}
-                    </Link>
-                  </CardContent>
-                  <CardContent>
-                    <Typography
-                      variant="subtitle2"
-                      gutterBottom
-                      component="div"
-                      display="inline"
-                    >
-                      Tel :
-                    </Typography>
-                    <Typography display="inline">0988264820</Typography>
-                  </CardContent>
-                  {/* </CardActionArea> */}
+                  {menuShare(index)}
+                  {menuSetting(index)}
+              </div>
+            );
+          }
+        )}
+      </Masonry>
+    </Container>
 
-                  {/* <CardContent
-                    onClick={(event) => {
-                      navigate("detail");
-                    }}
-                  >
-                    <Typography variant="body2" color="text.secondary">
-                      This impressive paella is a perfect party dish and a fun
-                      meal to cook together with your guests. Add 1 cup of
-                      frozen peas along with the mussels, if you like.
-                    </Typography>
-                  </CardContent> */}
-                  {/* </CardActionArea> */}
-
-                  <CardActions disableSpacing>
-                    <IconButton aria-label="add to favorites">
-                      <FavoriteIcon /*onClick={snackbarClick}*/
-                        onClick={() => {
-                          setDialogLoginOpen(true);
-                        }}
-                      />
-                    </IconButton>
-                    <IconButton aria-label="share">
-                      <ShareIcon
-                        onClick={(e) => {
-                          handleAnchorElShareOpen(key, e);
-                        }}
-                      />
-                      <Menu
-                        anchorEl={anchorElShare && anchorElShare[key]}
-                        keepMounted
-                        open={anchorElShare && Boolean(anchorElShare[key])}
-                        onClose={handleAnchorElShareClose}
-                        getContentAnchorEl={null}
-                        anchorOrigin={{
-                          vertical: "bottom",
-                          horizontal: "center"
-                        }}
-                        transformOrigin={{
-                          vertical: "top",
-                          horizontal: "center"
-                        }}
-                        MenuListProps={{
-                          "aria-labelledby": "lock-button",
-                          role: "listbox"
-                        }}
-                      >
-                        <MenuItem onClick={handleAnchorElShareClose}>
-                          <FacebookShareButton
-                            url={"https://peing.net/ja/"}
-                            quote={"quotequotequotequote"}
-                            hashtag={"#hashtag"}
-                            description={"aiueo"}
-                            className="Demo__some-network__share-button"
-                          >
-                            <FacebookIcon size={32} round /> Facebook
-                          </FacebookShareButton>
-                        </MenuItem>{" "}
-                        <MenuItem onClick={handleAnchorElShareClose}>
-                          <TwitterShareButton
-                            title={"test"}
-                            url={"https://peing.net/ja/"}
-                            hashtags={["hashtag1", "hashtag2"]}
-                          >
-                            <TwitterIcon size={32} round />
-                            Twitter
-                          </TwitterShareButton>
-                        </MenuItem>
-                      </Menu>
-                    </IconButton>
-
-                    <IconButton aria-label="comment">
-                      <CommentIcon
-                        onClick={() => {
-                          console.log("CommentIcon");
-                          setPanelComment({ isOpen: true, commentId: 3456 });
-
-                          // setDrawerOpen(true)
-                        }}
-                      />
-                    </IconButton>
-
-                    <IconButton aria-label="more">
-                      <MoreVertIcon
-                        onClick={(e) => {
-                          console.log("MoreVertIcon");
-                          handleAnchorElSettingOpen(key, e);
-                        }}
-                      />
-                      <Menu
-                        anchorEl={anchorElSetting && anchorElSetting[key]}
-                        keepMounted
-                        open={anchorElSetting && Boolean(anchorElSetting[key])}
-                        onClose={handleAnchorElSettingClose}
-                        getContentAnchorEl={null}
-                        anchorOrigin={{
-                          vertical: "bottom",
-                          horizontal: "center"
-                        }}
-                        transformOrigin={{
-                          vertical: "top",
-                          horizontal: "center"
-                        }}
-                        MenuListProps={{
-                          "aria-labelledby": "lock-button",
-                          role: "listbox"
-                        }}
-                      >
-                        <MenuItem onClick={handleAnchorElSettingClose}>
-                          Report
-                        </MenuItem>{" "}
-                      </Menu>
-                    </IconButton>
-                  </CardActions>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-        <Container sx={{ py: 2 }} maxWidth="xl">
+    <Container sx={{ py: 2 }} maxWidth="xl">
           <Pagination
             page={page}
             onPageChange={(event, newPage) => {
@@ -414,16 +262,19 @@ const Home = (props) => {
                 search: "?sort=date&order=newest"
               });
             }}
+            count={total}
           />
         </Container>
         <Footer />
-      </div>
 
-      {snackbarOpen && (
+    </div>
+
+      {snackbar.open && (
         <PopupSnackbar
-          isOpen={snackbarOpen}
+          isOpen={snackbar.open}
+          message={snackbar.message}
           onClose={() => {
-            setSnackbarOpen(false);
+            setSnackbar({...snackbar, open: false});
           }}
         />
       )}
@@ -443,10 +294,10 @@ const Home = (props) => {
 
       {lightbox.isOpen && (
         <Lightbox
-          mainSrc={images[lightbox.photoIndex]}
-          nextSrc={images[(lightbox.photoIndex + 1) % images.length]}
+          mainSrc={lightbox.images[lightbox.photoIndex].base64}
+          nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].base64}
           prevSrc={
-            images[(lightbox.photoIndex + images.length - 1) % images.length]
+            lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].base64
           }
           onCloseRequest={() => {
             setLightbox({ ...lightbox, isOpen: false });
@@ -455,13 +306,13 @@ const Home = (props) => {
             setLightbox({
               ...lightbox,
               photoIndex:
-                (lightbox.photoIndex + images.length - 1) % images.length
+                (lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length
             });
           }}
           onMoveNextRequest={() => {
             setLightbox({
               ...lightbox,
-              photoIndex: (lightbox.photoIndex + 1) % images.length
+              photoIndex: (lightbox.photoIndex + 1) % lightbox.images.length
             });
           }}
         />
@@ -476,8 +327,7 @@ const Home = (props) => {
         />
       )}
     </div>
-    // </ThemeProvider>
   );
-};
+}
 
-export default Home;
+export default Home; 

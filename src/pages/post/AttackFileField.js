@@ -18,7 +18,7 @@ const Input = styled("input")({
   display: "none"
 });
 
-const AttackFileField = ({ values, onChange, onSnackbarOpen }) => {
+const AttackFileField = ({ values, onChange, onSnackbar }) => {
   const [inputList, setInputList] = useState(values);
 
   // useEffect(() => {
@@ -51,7 +51,7 @@ const AttackFileField = ({ values, onChange, onSnackbarOpen }) => {
   //   setInputList([...inputList, { files: {} }]);
   // };
 
-  onFileChange = (e) => {
+  const onFileChange = (e) => {
     // Update the state
     // this.setState({ selectedFile: event.target.files[0] });
     // file
@@ -91,8 +91,25 @@ const AttackFileField = ({ values, onChange, onSnackbarOpen }) => {
             if (file.type) {
               // new file
               return (
-                <div>
-                  <IconButton
+                <div style={{ position: "relative" }}>
+                  <Avatar
+                    sx={{
+                      height: 80,
+                      width: 80,
+                      border: "1px solid #cccccc",
+                      padding: "5px"
+                    }}
+                    variant="rounded"
+                    alt="Example Alt"
+                    src={URL.createObjectURL(file)}
+                    // src="https://img.freepik.com/free-vector/cute-astronaut-dance-cartoon-vector-icon-illustration-technology-science-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3851.jpg?w=2000"
+                  />
+                   <IconButton
+                    style={{
+                      position: "absolute",
+                      right: 0,
+                      top:0
+                    }}
                     color="primary"
                     aria-label="upload picture"
                     component="span"
@@ -110,28 +127,35 @@ const AttackFileField = ({ values, onChange, onSnackbarOpen }) => {
                       //   inputList,
                       //   newInputList
                       // );
-                      onSnackbarOpen(true);
+                      onSnackbar({open:true, message:"Delete image"});
                     }}
                   >
                     <CloseIcon />
                   </IconButton>
-                  <Avatar
-                    sx={{
-                      height: 80,
-                      width: 80
-                    }}
-                    variant="rounded"
-                    alt="Example Alt"
-                    src={URL.createObjectURL(file)}
-                    // src="https://img.freepik.com/free-vector/cute-astronaut-dance-cartoon-vector-icon-illustration-technology-science-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3851.jpg?w=2000"
-                  />
                 </div>
               );
             } else {
               // old file
               return (
-                <div>
-                  <IconButton
+                <div style={{ position: "relative" }}>
+                  <Avatar
+                    sx={{
+                      height: 80,
+                      width: 80,
+                      border: "1px solid #cccccc",
+                      padding: "5px"
+                    }}
+                    variant="rounded"
+                    alt="Example Alt"
+                    src={file.url}
+                    // src="https://img.freepik.com/free-vector/cute-astronaut-dance-cartoon-vector-icon-illustration-technology-science-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3851.jpg?w=2000"
+                  />
+                   <IconButton
+                    style={{
+                      position: "absolute",
+                      right: 0,
+                      top:0
+                    }}
                     color="primary"
                     aria-label="upload picture"
                     component="span"
@@ -143,22 +167,12 @@ const AttackFileField = ({ values, onChange, onSnackbarOpen }) => {
                       };
                       setInputList(newInputList);
 
-                      onSnackbarOpen(true);
+                      onSnackbar({open:true, message:"Delete image"});
                       // console.log("delete, old file :", index, newInputList);
                     }}
                   >
                     <CloseIcon />
                   </IconButton>
-                  <Avatar
-                    sx={{
-                      height: 80,
-                      width: 80
-                    }}
-                    variant="rounded"
-                    alt="Example Alt"
-                    src={file.url}
-                    // src="https://img.freepik.com/free-vector/cute-astronaut-dance-cartoon-vector-icon-illustration-technology-science-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3851.jpg?w=2000"
-                  />
                 </div>
               );
             }

@@ -166,20 +166,20 @@ const BankInputField = ({ values, onChange }) => {
     setInputList([...inputList, { firstName: "", lastName: "", file: {} }]);
   };
 
-  onFileChange = (e, index) => {
-    // Update the state
-    // this.setState({ selectedFile: event.target.files[0] });
+  // onFileChange = (e, index) => {
+  //   // Update the state
+  //   // this.setState({ selectedFile: event.target.files[0] });
 
-    // file
-    // console.log("onFileChange : ", e.target.files);
+  //   // file
+  //   // console.log("onFileChange : ", e.target.files);
 
-    const { name, value } = e.target;
-    const list = [...inputList];
-    list[index][name] = e.target.files[0];
-    setInputList(list);
+  //   const { name, value } = e.target;
+  //   const list = [...inputList];
+  //   list[index][name] = e.target.files[0];
+  //   setInputList(list);
 
-    // console.log("onFileChange : ", name, value);
-  };
+  //   // console.log("onFileChange : ", name, value);
+  // };
 
   return (
     <Box sx={{ /*bgcolor: "background.paper",*/ p: 1 }} component="footer">

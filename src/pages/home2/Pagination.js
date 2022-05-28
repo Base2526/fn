@@ -6,14 +6,15 @@ const Pagination = ({
   page,
   onPageChange,
   rowsPerPage,
-  onRowsPerPageChange
+  onRowsPerPageChange,
+  count
 }) => {
   return (
     <Container sx={{ py: 1 }} maxWidth="xl">
       <TablePagination
         // sx={{ border: 1, borderColor: "red" }}
         component="div"
-        count={100}
+        count={count}
         page={page}
         onPageChange={onPageChange}
         rowsPerPage={rowsPerPage}

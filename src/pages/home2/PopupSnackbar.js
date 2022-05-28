@@ -4,7 +4,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import IconButton, { IconButtonProps } from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 
-const PopupSnackbar = ({ isOpen, onClose }) => {
+const PopupSnackbar = ({ isOpen, onClose, message }) => {
   useEffect(() => {
     console.log("useEffect panelComment");
   }, []);
@@ -14,7 +14,7 @@ const PopupSnackbar = ({ isOpen, onClose }) => {
       open={isOpen}
       autoHideDuration={6000}
       onClose={onClose}
-      message="Note archived"
+      message={message}
       action={
         <React.Fragment>
           <Button color="secondary" size="small" onClick={onClose}>

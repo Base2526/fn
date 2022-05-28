@@ -34,11 +34,11 @@ import Editor from "../../components/editor/Editor";
 const Post = () => {
   const [value, setValue] = useState(new Date("2014-08-18T21:11:54"));
 
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState({open:false, message:""});
 
-  const snackbarClick = () => {
-    setSnackbarOpen(true);
-  };
+  // const snackbarClick = () => {
+  //   setSnackbarOpen(true);
+  // };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -153,9 +153,9 @@ const Post = () => {
                 console.log("AttackFileField >> :", data);
               }}
               // snackbarOpen
-              onSnackbarOpen={(data) => {
-                console.log("onSnackbarOpen >> :", data);
-                setSnackbarOpen(data);
+              onSnackbar={(data) => {
+                // console.log("onSnackbarOpen >> :", data);
+                setSnackbar(data);
               }}
             />
 
@@ -175,11 +175,12 @@ const Post = () => {
         </Box>
       </LocalizationProvider>
 
-      {snackbarOpen && (
+      {snackbar.open && (
         <PopupSnackbar
-          isOpen={snackbarOpen}
+          isOpen={snackbar.open}
+          message={snackbar.message}
           onClose={() => {
-            setSnackbarOpen(false);
+            setSnackbar({...message, open:false});
           }}
         />
       )}

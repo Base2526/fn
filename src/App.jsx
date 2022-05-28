@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { withStyles } from "@material-ui/core/styles";
@@ -21,6 +21,7 @@ import {
   Route,
   useHistory
 } from "react-router-dom";
+// import { createMuiTheme, ThemeProvider } from "@material-ui/core";
 
 import UserList from "./pages/userList/UserList";
 import User from "./pages/user/User";
@@ -64,6 +65,8 @@ import Breadcs from "./components/breadcrumbs/Breadcs";
 
 import { NotificationsNone, Language, Settings } from "@material-ui/icons";
 import styled from "styled-components";
+
+import { socket } from "./SocketioClient";
 
 const drawerWidth = 220;
 
@@ -169,278 +172,296 @@ export const TopRight = styled.div`
   align-items: center;
 `;
 
-class App extends React.Component {
-  state = {
-    open: false,
-    anchorEl: null
+// const theme = createMuiTheme({
+//   palette: {
+//     primary: {
+//       main: "#fafafa"
+//     },
+//     secondary: purple
+//   },
+//   typography: {
+//     fontFamily: "Quicksand",
+//     fontWeightLight: 400,
+//     fontWeightRegular: 500,
+//     fontWeightMedium: 600,
+//     fontWeightBold: 700
+//   }
+// });
+
+const App = (props) => {
+  const [open, setOpen] = useState(false)
+  const [anchorEl, setAnchorEl] = useState(null)
+
+  useEffect(async()=>{
+    // let socket = await socket({});
+    // console.log("socket : ", socket)
+  }, [])
+
+  const handleDrawerOpen = () => {
+    // this.setState({ open: !this.state.open });
+    setOpen(!open)
   };
 
-  handleDrawerOpen = () => {
-    this.setState({ open: !this.state.open });
+  const handleDrawerClose = () => {
+    // this.setState({ open: false });
+    setOpen(false)
   };
 
-  handleDrawerClose = () => {
-    this.setState({ open: false });
+  const handleMenu = (event) => {
+    // this.setState({ anchorEl: event.currentTarget });
+    setAnchorEl(event.currentTarget)
+  };
+  const handleClose = () => {
+    // this.setState({ anchorEl: null });
+    setAnchorEl(null)
   };
 
-  handleMenu = (event) => {
-    this.setState({ anchorEl: event.currentTarget });
-  };
-  handleClose = () => {
-    this.setState({ anchorEl: null });
-  };
-
-  handleText = () => {
+  const handleText = () => {
     console.log("handleText");
   };
 
-  render() {
-    const { classes, theme } = this.props;
-    const { anchorEl } = this.state;
-    const open = Boolean(anchorEl);
-    return (
-      <Router>
-        <Store>
-          <div className={classes.root}>
-            <CssBaseline />
-            <AppBar
-              position="fixed"
-              className={classes.appBar}
-              fooJon={classNames(classes.appBar, {
-                [classes.appBarShift]: this.state.open
-              })}
-            >
-              <Toolbar disableGutters={true}>
-                <IconButton
-                  color="inherit"
-                  aria-label="Open drawer"
-                  onClick={this.handleDrawerOpen}
-                  className={classes.menuButton}
-                >
-                  <MenuIcon
-                    classes={{
-                      root: this.state.open
-                        ? classes.menuButtonIconOpen
-                        : classes.menuButtonIconClosed
-                    }}
-                  />
-                </IconButton>
-                <Typography
-                  variant="h6"
-                  color="inherit"
-                  className={classes.grow}
-                  noWrap
-                >
-                  BANLIST
-                </Typography>
-                <TopRight>
-                  <IconContainer>
-                    <NotificationsNone />
-                    <TopIconBadge>2</TopIconBadge>
-                  </IconContainer>
-                  <IconContainer>
-                    <Language />
-                    <TopIconBadge>2</TopIconBadge>
-                  </IconContainer>
-                  <IconContainer>
-                    <IconButton
-                      aria-owns={open ? "menu-appbar" : undefined}
-                      aria-haspopup="true"
-                      onClick={this.handleMenu}
-                      color="inherit"
-                    >
-                      <AccountCircle />
-                    </IconButton>
-                  </IconContainer>
-                  <Menu
-                    id="menu-appbar"
-                    anchorEl={anchorEl}
-                    anchorOrigin={{
-                      vertical: "top",
-                      horizontal: "right"
-                    }}
-                    transformOrigin={{
-                      vertical: "top",
-                      horizontal: "right"
-                    }}
-                    open={open}
-                    onClose={this.handleClose}
-                  >
-                    <MenuItem onClick={this.handleClose}>Profile</MenuItem>
-                    <MenuItem onClick={this.handleClose}>My account</MenuItem>
-                  </Menu>
-                </TopRight>
-              </Toolbar>
-            </AppBar>
-            <Drawer
-              variant="permanent"
-              className={classNames(classes.drawer, {
-                [classes.drawerOpen]: this.state.open,
-                [classes.drawerClose]: !this.state.open
-              })}
-              classes={{
-                paper: classNames({
-                  [classes.drawerOpen]: this.state.open,
-                  [classes.drawerClose]: !this.state.open
-                })
-              }}
-              open={this.state.open}
-            >
-              <div className={classes.toolbar} />
-              {/* <List>
-                {["Inbox", "Starred", "Send email", "Drafts"].map(
-                  (text, index) => (
-                    <ListItem button key={text}>
-                      <ListItemIcon>
-                        {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                      </ListItemIcon>
-                      <ListItemText primary={text} />
-                    </ListItem>
-                  )
-                )}
-              </List>
-              <Divider /> */}
-              <List>
-                {/* {["All mail", "Trash", "Spam"].map((text, index) => (
-              <ListItem button key={text}>
-                <ListItemIcon>
-                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                </ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItem>
-            ))} */}
-                {MenuList.map((doc) => {
-                  return <CustomizedListItem key={doc.id} doc={doc} />;
-                })}
-              </List>
-            </Drawer>
-            <main className={classes.content}>
-              <div className={classes.toolbar} />
-              <Breadcs title={""} />
-              {/* <Typography paragraph>
-                Consequat mauris nunc congue nisi vitae suscipit. Fringilla est
-                ullamcorper eget nulla facilisi etiam dignissim diam. Pulvinar
-                elementum integer enim neque volutpat ac tincidunt. Ornare
-                suspendisse sed nisi lacus sed viverra tellus. Purus sit amet
-                volutpat consequat mauris. Elementum eu facilisis sed odio
-                morbi. Euismod lacinia at quis risus sed vulputate odio. Morbi
-                tincidunt ornare massa eget egestas purus viverra accumsan in.
-                In hendrerit gravida rutrum quisque non tellus orci ac.
-                Pellentesque nec nam aliquam sem et tortor. Habitant morbi
-                tristique senectus et. Adipiscing elit duis tristique
-                sollicitudin nibh sit. Ornare aenean euismod elementum nisi quis
-                eleifend. Commodo viverra maecenas accumsan lacus vel facilisis.
-                Nulla posuere sollicitudin aliquam ultrices sagittis orci a.
+  return (
+    <Router>
+      <Store>
+        <div className={props.classes.root}>
+          <CssBaseline />
+          <AppBar
+            position="fixed"
+            className={props.classes.appBar}
+            fooJon={classNames(props.classes.appBar, {
+              [props.classes.appBarShift]: open
+            })}
+          >
+            <Toolbar disableGutters={true}>
+              <IconButton
+                color="inherit"
+                aria-label="Open drawer"
+                onClick={handleDrawerOpen}
+                className={props.classes.menuButton}
+              >
+                <MenuIcon
+                  classes={{
+                    root: open
+                      ? props.classes.menuButtonIconOpen
+                      : props.classes.menuButtonIconClosed
+                  }}
+                />
+              </IconButton>
+              <Typography
+                variant="h6"
+                color="inherit"
+                className={props.classes.grow}
+                noWrap
+              >
+                BANLIST
               </Typography>
-              <Typography paragraph>foo</Typography> */}
-              <div className="container">
-                {/* <Sidebar /> */}
-                <Switch>
-                  <Route path="/" exact>
-                    <Home handleText={this.handleText} />
-                  </Route>
-                  <Route path="/users">
-                    <UserList />
-                  </Route>
-                  <Route path="/user/:id/:mode">
-                    <User />
-                  </Route>
-                  <Route path="/user/:mode">
-                    <User />
-                  </Route>
+              <TopRight>
+                <IconContainer>
+                  <NotificationsNone />
+                  <TopIconBadge>2</TopIconBadge>
+                </IconContainer>
+                <IconContainer>
+                  <Language />
+                  <TopIconBadge>2</TopIconBadge>
+                </IconContainer>
+                <IconContainer>
+                  <IconButton
+                    aria-owns={open ? "menu-appbar" : undefined}
+                    aria-haspopup="true"
+                    onClick={handleMenu}
+                    color="inherit"
+                  >
+                    <AccountCircle />
+                  </IconButton>
+                </IconContainer>
+                <Menu
+                  id="menu-appbar"
+                  anchorEl={anchorEl}
+                  anchorOrigin={{
+                    vertical: "top",
+                    horizontal: "right"
+                  }}
+                  transformOrigin={{
+                    vertical: "top",
+                    horizontal: "right"
+                  }}
+                  // open={open}
+                  onClose={handleClose}
+                >
+                  <MenuItem onClick={handleClose}>Profile</MenuItem>
+                  <MenuItem onClick={handleClose}>My account</MenuItem>
+                </Menu>
+              </TopRight>
+            </Toolbar>
+          </AppBar>
+          <Drawer
+            variant="permanent"
+            className={classNames(props.classes.drawer, {
+              [props.classes.drawerOpen]: open,
+              [props.classes.drawerClose]: !open
+            })}
+            classes={{
+              paper: classNames({
+                [props.classes.drawerOpen]: open,
+                [props.classes.drawerClose]: !open
+              })
+            }}
+            open={open}
+          >
+            <div className={props.classes.toolbar} />
+            {/* <List>
+              {["Inbox", "Starred", "Send email", "Drafts"].map(
+                (text, index) => (
+                  <ListItem button key={text}>
+                    <ListItemIcon>
+                      {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                    </ListItemIcon>
+                    <ListItemText primary={text} />
+                  </ListItem>
+                )
+              )}
+            </List>
+            <Divider /> */}
+            <List>
+              {/* {["All mail", "Trash", "Spam"].map((text, index) => (
+            <ListItem button key={text}>
+              <ListItemIcon>
+                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+              </ListItemIcon>
+              <ListItemText primary={text} />
+            </ListItem>
+          ))} */}
+              {MenuList.map((doc) => {
+                return <CustomizedListItem key={doc.id} doc={doc} />;
+              })}
+            </List>
+          </Drawer>
+          <main className={props.classes.content}>
+            <div className={props.classes.toolbar} />
+            <Breadcs title={""} />
+            {/* <Typography paragraph>
+              Consequat mauris nunc congue nisi vitae suscipit. Fringilla est
+              ullamcorper eget nulla facilisi etiam dignissim diam. Pulvinar
+              elementum integer enim neque volutpat ac tincidunt. Ornare
+              suspendisse sed nisi lacus sed viverra tellus. Purus sit amet
+              volutpat consequat mauris. Elementum eu facilisis sed odio
+              morbi. Euismod lacinia at quis risus sed vulputate odio. Morbi
+              tincidunt ornare massa eget egestas purus viverra accumsan in.
+              In hendrerit gravida rutrum quisque non tellus orci ac.
+              Pellentesque nec nam aliquam sem et tortor. Habitant morbi
+              tristique senectus et. Adipiscing elit duis tristique
+              sollicitudin nibh sit. Ornare aenean euismod elementum nisi quis
+              eleifend. Commodo viverra maecenas accumsan lacus vel facilisis.
+              Nulla posuere sollicitudin aliquam ultrices sagittis orci a.
+            </Typography>
+            <Typography paragraph>foo</Typography> */}
+            <div className="container">
+              {/* <Sidebar /> */}
+              <Switch>
+                <Route path="/" exact>
+                  <Home handleText={handleText} />
+                </Route>
+                <Route path="/users">
+                  <UserList />
+                </Route>
+                <Route path="/user/:id/:mode">
+                  <User />
+                </Route>
+                <Route path="/user/:mode">
+                  <User />
+                </Route>
 
-                  <Route path="/products">
-                    <ProductList />
-                  </Route>
-                  <Route path="/product/:id">
-                    <Product />
-                  </Route>
-                  <Route path="/newProduct">
-                    <NewProduct />
-                  </Route>
+                {/* <Route path="/products">
+                  <ProductList />
+                </Route>
+                <Route path="/product/:id">
+                  <Product />
+                </Route>
+                <Route path="/newProduct">
+                  <NewProduct />
+                </Route> */}
 
-                  <Route path="/posts">
-                    <PostList />
-                  </Route>
-                  <Route path="/post/:mode">
-                    <Post />
-                  </Route>
-                  <Route path="/post/:id/:mode">
-                    <Post />
-                  </Route>
+                <Route path="/posts">
+                  <PostList />
+                </Route>
+                <Route path="/post/:mode">
+                  <Post />
+                </Route>
+                <Route path="/post/:id/:mode">
+                  <Post />
+                </Route>
 
-                  {/* comments */}
-                  <Route path="/comments">
-                    <CommentList />
-                  </Route>
-                  <Route path="/comment/:id/:mode">
-                    <Comment />
-                  </Route>
-                  <Route path="/comment/:mode">
-                    <Comment />
-                  </Route>
+                {/* comments */}
+                <Route path="/comments">
+                  <CommentList />
+                </Route>
+                <Route path="/comment/:id/:mode">
+                  <Comment />
+                </Route>
+                <Route path="/comment/:mode">
+                  <Comment />
+                </Route>
 
-                  {/* sockets */}
-                  <Route path="/sockets">
-                    <SocketList />
-                  </Route>
-                  <Route path="/socket/:id">
-                    <Socket />
-                  </Route>
-                  {/* <Route path="/newSocket">
-                    <NewSocket />
-                  </Route> */}
+                {/* sockets */}
+                <Route path="/sockets">
+                  <SocketList />
+                </Route>
+                <Route path="/socket/:id">
+                  <Socket />
+                </Route>
+                {/* <Route path="/newSocket">
+                  <NewSocket />
+                </Route> */}
 
-                  {/* devel */}
-                  <Route path="/devel">
-                    <Devel />
-                  </Route>
+                {/* devel */}
+                <Route path="/devel">
+                  <Devel />
+                </Route>
 
-                  {/* roles */}
-                  <Route path="/roles">
-                    <RoleList />
-                  </Route>
-                  <Route path="/role/:id/:mode">
-                    <Role />
-                  </Route>
-                  <Route path="/role/:mode">
-                    <Role />
-                  </Route>
+                {/* roles */}
+                <Route path="/roles">
+                  <RoleList />
+                </Route>
+                <Route path="/role/:id/:mode">
+                  <Role />
+                </Route>
+                <Route path="/role/:mode">
+                  <Role />
+                </Route>
 
-                  {/* banks */}
-                  <Route path="/banks">
-                    <BankList />
-                  </Route>
-                  <Route path="/bank/:id/:mode">
-                    <Bank />
-                  </Route>
-                  <Route path="/bank/:mode">
-                    <Bank />
-                  </Route>
+                {/* banks */}
+                <Route path="/banks">
+                  <BankList />
+                </Route>
+                <Route path="/bank/:id/:mode">
+                  <Bank />
+                </Route>
+                <Route path="/bank/:mode">
+                  <Bank />
+                </Route>
 
-                  {/* theme mail */}
-                  <Route path="/theme-mails">
-                    <ThemeMailList />
-                  </Route>
-                  <Route path="/theme-mail/:id/:mode">
-                    <ThemeMail />
-                  </Route>
-                  <Route path="/theme-mail/:mode">
-                    <ThemeMail />
-                  </Route>
-                </Switch>
-              </div>
-            </main>
-          </div>
-        </Store>
-      </Router>
-    );
-  }
+                {/* theme mail */}
+                <Route path="/theme-mails">
+                  <ThemeMailList />
+                </Route>
+                <Route path="/theme-mail/:id/:mode">
+                  <ThemeMail />
+                </Route>
+                <Route path="/theme-mail/:mode">
+                  <ThemeMail />
+                </Route>
+              </Switch>
+            </div>
+          </main>
+        </div>
+      </Store>
+    </Router>
+  );
 }
 
-App.propTypes = {
-  classes: PropTypes.object.isRequired,
-  theme: PropTypes.object.isRequired
-};
+// App.propTypes = {
+//   props.classes: PropTypes.object.isRequired,
+//   theme: PropTypes.object.isRequired
+// };
 
 export default withStyles(styles, { withTheme: true })(App);
