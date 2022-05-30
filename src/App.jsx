@@ -19,10 +19,9 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
-  useHistory
+  useHistory,
+  Link
 } from "react-router-dom";
-// import { createMuiTheme, ThemeProvider } from "@material-ui/core";
-
 import UserList from "./pages/userList/UserList";
 import User from "./pages/user/User";
 import Store from "./Store";
@@ -46,6 +45,9 @@ import Role from "./pages/role/Role";
 
 import Devel from "./pages/devel/Devel";
 
+import Notification from "./pages/notification"
+import Messenger from "./pages/messenger"
+
 // ThemeMailList
 import ThemeMailList from "./pages/themeMailList/ThemeMailList";
 import ThemeMail from "./pages/themeMail/ThemeMail";
@@ -63,9 +65,10 @@ import CustomizedListItem from "./CustomizedListItem";
 
 import Breadcs from "./components/breadcrumbs/Breadcs";
 
-import { NotificationsNone, Language, Settings } from "@material-ui/icons";
+import { NotificationsNone, Language, Settings, Comment as CommentIcon } from "@material-ui/icons";
 import styled from "styled-components";
 
+// import CommentIcon from '@mui/icons-material/Comment';
 import { socket } from "./SocketioClient";
 
 const drawerWidth = 220;
@@ -189,10 +192,11 @@ export const TopRight = styled.div`
 // });
 
 const App = (props) => {
+  const navigate = useHistory();
   const [open, setOpen] = useState(false)
   const [anchorEl, setAnchorEl] = useState(null)
 
-  useEffect(async()=>{
+  useEffect(async () => {
     // let socket = await socket({});
     // console.log("socket : ", socket)
   }, [])
@@ -256,14 +260,18 @@ const App = (props) => {
                 BANLIST
               </Typography>
               <TopRight>
-                <IconContainer>
+              <Link to="/notification">
+                <IconContainer >
                   <NotificationsNone />
                   <TopIconBadge>2</TopIconBadge>
                 </IconContainer>
-                <IconContainer>
-                  <Language />
-                  <TopIconBadge>2</TopIconBadge>
-                </IconContainer>
+                </Link>
+                <Link to="/messenger">
+                  <IconContainer>
+                    <CommentIcon />
+                    <TopIconBadge>2</TopIconBadge>
+                  </IconContainer>
+                </Link>
                 <IconContainer>
                   <IconButton
                     aria-owns={open ? "menu-appbar" : undefined}
@@ -450,6 +458,15 @@ const App = (props) => {
                 <Route path="/theme-mail/:mode">
                   <ThemeMail />
                 </Route>
+
+                <Route path="/notification">
+                  <Notification />
+                </Route>
+
+                <Route path="/messenger">
+                  <Messenger />
+                </Route>
+                {/* Notification */}
               </Switch>
             </div>
           </main>

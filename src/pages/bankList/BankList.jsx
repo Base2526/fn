@@ -8,7 +8,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { DeleteOutline } from "@material-ui/icons";
 import { userRows } from "../../data";
 import { Link } from "react-router-dom";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { BankContext } from "../../Store";
 
 import {
@@ -27,6 +27,11 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
+import CircularProgress from '@mui/material/CircularProgress';
+import Avatar from "@mui/material/Avatar";
+import _ from "lodash"
+
+import { getList } from "../../components/provider/DataProvider";
 import Footer from "../home2/Footer";
 
 const BankList = (props) => {
@@ -34,10 +39,16 @@ const BankList = (props) => {
   // const [userData, setUserData] = useState(userRows);
   const [userData, setUserData] = useContext(BankContext);
 
+  const [datas, setDatas] = useState({data: null, total: 0});
+
   const [openDialogDelete, setOpenDialogDelete] = useState({
     isOpen: false,
     id: ""
   });
+
+  useEffect(async()=>{
+    setDatas( await getList("banks", {}) )
+  }, [])
 
   const handleClickOpen = () => {
     // setOpen(true);
@@ -55,7 +66,7 @@ const BankList = (props) => {
   };
 
   const columns = [
-    { field: "id", headerName: "ID", width: 100 },
+    // { field: "id", headerName: "ID", width: 100 },
     {
       field: "name",
       headerName: "Name",
@@ -70,8 +81,8 @@ const BankList = (props) => {
       // }
     },
     {
-      field: "detail",
-      headerName: "Detail",
+      field: "description",
+      headerName: "Description",
       width: 250,
       renderCell: (params) => {
         return (
@@ -87,11 +98,9 @@ const BankList = (props) => {
               variant="body1"
               gutterBottom
               dangerouslySetInnerHTML={{
-                __html: params.row.detail
-                // "<h1>H1</h1><h2>H2</h2><h3>H3</h3><h4>H4</h4><h5>H5</h5><h6>H6</h6><p>default body1</p>"
+                __html: params.row.description
               }}
             >
-              {/* {params.row.detail} */}
             </Typography>
           </Box>
         );
@@ -133,14 +142,17 @@ const BankList = (props) => {
       >
         Add new bank
       </Button>
-      <DataGrid
-        rows={userData}
-        columns={columns}
-        // pageSize={5}
-        // rowsPerPageOptions={[5]}
-        // checkboxSelection
-        // disableSelectionOnClick
-      />
+     
+      {
+         _.isEmpty(datas.data) 
+         ?  <div><CircularProgress /></div> 
+         :  <DataGrid
+              rows={datas.data}
+              columns={columns}
+            />
+      }
+
+
       {openDialogDelete.isOpen && (
         <Dialog
           open={openDialogDelete.isOpen}

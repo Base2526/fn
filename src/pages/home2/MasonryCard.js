@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardContent from "@material-ui/core/CardContent";
@@ -20,6 +20,10 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { FacebookShareButton, TwitterShareButton } from "react-share";
 import { FacebookIcon, TwitterIcon } from "react-share";
+
+import ShowMoreText from "react-show-more-text";
+import ExpandLess from "@material-ui/icons/ExpandLess";
+import ExpandMore from "@material-ui/icons/ExpandMore";
 
 const useStyles = makeStyles({
   avatar: {
@@ -47,6 +51,10 @@ const useStyles = makeStyles({
 const MasonryCard =({ n, index, onPanelComment, onSnackbar, onLightbox, onAnchorElShareOpen, onAnchorElSettingOpen }) => {
   const classes = useStyles(n);
 
+  const [expand, setExpand] = useState(false);
+  const onClick = () => {
+    setExpand(!expand);
+  };
 
   const renderMedia = (m) =>{
     if(m.files){
@@ -105,12 +113,25 @@ const MasonryCard =({ n, index, onPanelComment, onSnackbar, onLightbox, onAnchor
           <div>
             {renderMedia(n)}
             <CardActionArea style={{}}>
-              <Typography variant="subtitle2" gutterBottom component="div">
-                หัวข้อร้องเรียน : {n.title}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                รายละเอียด : {n.body}
-              </Typography>
+                <Typography variant="subtitle2" gutterBottom component="div">
+                    หัวข้อร้องเรียน : {n.title}
+                </Typography>
+                {/* <Typography variant="body2" color="textSecondary">
+                    รายละเอียด : {n.body}
+                </Typography> */}
+                <ShowMoreText
+                    lines={2}
+                    more={"See more"}
+                    less={""}
+                    onClick={onClick}
+                    className="show-more-text"
+                    anchorClass="my-anchor-css-class"
+                    expanded={expand}
+                    width={400}
+                    truncatedEndingComponent={"..."}
+                >
+                   รายละเอียด : {n.body}
+                </ShowMoreText>
             </CardActionArea>
             <Typography variant="subtitle2" color="textSecondary">
               ยอดเงิน : {n.number}
