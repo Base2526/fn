@@ -35,6 +35,8 @@ const Breadcs = ({ title }) => {
 
   const develMatches = useRouteMatch("/devel");
 
+  const notificationMatches =useRouteMatch("/notification")
+
   const handleClick = () => {};
   return (
     <div role="presentation" onClick={handleClick}>
@@ -177,6 +179,12 @@ const Breadcs = ({ title }) => {
         {develMatches && (
           <MuiLink component={Link} to="/devel">
             Devel
+          </MuiLink>
+        )}
+
+        {notificationMatches && (
+          <MuiLink component={Link} to="/notification">
+            Notification
           </MuiLink>
         )}
 

@@ -20,30 +20,13 @@ import Autocomplete from "@mui/material/Autocomplete";
 import InputAdornment from "@mui/material/InputAdornment";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-
 import { useParams } from "react-router-dom";
-
 import _ from "lodash";
+import { getList } from "../../components/provider/DataProvider";
 
 const Input = styled("input")({
   display: "none"
 });
-
-const top100Films = [
-  { title: "The Shawshank Redemption", year: 1994 },
-  { title: "The Godfather", year: 1972 },
-  { title: "The Godfather: Part II", year: 1974 },
-  { title: "The Dark Knight", year: 2008 },
-  { title: "12 Angry Men", year: 1957 },
-  { title: "Schindler's List", year: 1993 },
-  { title: "Pulp Fiction", year: 1994 }
-];
-
-const optionsRoles = [
-  { label: "Administrator", id: 1 },
-  { label: "Anonymous", id: 2 },
-  { label: "Authenticated", id: 3 }
-];
 
 const optionsActive = [
   { label: "Active", id: 1 },
@@ -54,6 +37,8 @@ const User = (props) => {
   const [profile, setProfile] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showCofirmPassword, setShowCofirmPassword] = useState(false);
+
+  const [roleDatas, setRoleDatas] = useState({data: null, total: 0});
 
   const [input, setInput] = useState({
     username: "",
@@ -71,8 +56,10 @@ const User = (props) => {
 
   let { id, mode } = useParams();
 
-  useEffect(() => {
+  useEffect(async() => {
     console.log("useParams :", id, mode);
+
+    setRoleDatas( await getList("roles", {}) )
   }, []);
 
   const onInputChange = (e) => {
@@ -348,9 +335,9 @@ const User = (props) => {
         multiple
         id="tags-outlined"
         name="userRoles"
-        options={optionsRoles}
-        // getOptionLabel={(option) => option.title}
-        defaultValue={[optionsRoles[1]]}
+        options={_.isEmpty(roleDatas.data) ? [] : roleDatas.data }
+        getOptionLabel={(option) => option.name}
+        defaultValue={[]}
         // filterSelectedOptions
         required
         renderInput={(params) => (

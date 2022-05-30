@@ -8,7 +8,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { DeleteOutline } from "@material-ui/icons";
 import { userRows } from "../../data";
 import { Link } from "react-router-dom";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { UserContext, PostContext } from "../../Store";
 import Box from "@mui/material/Box";
 
@@ -26,6 +26,12 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import Typography from "@mui/material/Typography";
+import CircularProgress from '@mui/material/CircularProgress';
+import _ from "lodash"
+import Avatar from "@mui/material/Avatar";
+import ShowMoreText from "react-show-more-text";
+import ExpandMore from "@material-ui/icons/ExpandMore";
+import { getList } from "../../components/provider/DataProvider";
 
 import Footer from "../home2/Footer";
 
@@ -39,6 +45,20 @@ const PostList = (props) => {
     isOpen: false,
     id: ""
   });
+
+  const [datas, setDatas] = useState({data: null, total: 0});
+
+  useEffect(async()=>{
+
+    setDatas(await getList("posts", {}))
+
+    // let {data, total} = await getList("posts", {})
+
+    // console.log("data, total :", data, total)
+    // console.log("userDatauserDatauserDatauserData ", userData)
+
+    console.log("useEffect")
+  },[])
 
   const handleClickOpen = () => {
     // setOpen(true);
@@ -57,22 +77,38 @@ const PostList = (props) => {
 
   const columns = [
     {
-      field: "id",
-      headerName: "ID",
-      width: 100
-      // renderCell: (params) => {
-      //   return (
-      //     <UserWrapper>
-      //       <img
-      //         src={
-      //           "https://cn.i.cdn.ti-platform.com/content/2167/we-baby-bears/showpage/fr/webabybears-icon.8db091e9.8db091e9.png"
-      //         }
-      //         alt=""
-      //       />
-      //       {params.row.id}
-      //     </UserWrapper>
-      //   );
-      // }
+      field: "files",
+      headerName: "Image",
+      width: 130,
+      renderCell: (params) => {
+
+        if(params.row.files.length < 1){
+          return <div />
+        }
+        return (
+          <div style={{ position: "relative" }}>
+            <Avatar
+              sx={{
+                height: 100,
+                width: 100
+              }}
+              variant="rounded"
+              alt="Example Alt"
+              src={params.row.files[0].base64}
+            />
+            <div
+                style={{
+                    position: "absolute",
+                    bottom: "5px",
+                    right: "5px",
+                    padding: "5px",
+                    backgroundColor: "#e1dede",
+                    color: "#919191"
+                }}
+                >{params.row.files.length}</div>
+          </div>
+        );
+      }
     },
     {
       field: "title",
@@ -87,9 +123,8 @@ const PostList = (props) => {
       //   );
       // }
     },
-    { field: "nameSubname", headerName: "Name Subname", width: 200 },
     {
-      field: "detail",
+      field: "body",
       headerName: "Detail",
       width: 250,
       renderCell: (params) => {
@@ -102,23 +137,43 @@ const PostList = (props) => {
               lineHeight: "16px"
             }}
           >
-            <Typography
+            {/* <Typography
               variant="body1"
               gutterBottom
               dangerouslySetInnerHTML={{
-                __html: params.row.detail
-                // "<h1>H1</h1><h2>H2</h2><h3>H3</h3><h4>H4</h4><h5>H5</h5><h6>H6</h6><p>default body1</p>"
+                __html: params.row.body
               }}
+            /> */}
+            <ShowMoreText
+              lines={2}
+              more={<ExpandMore />}
+              less={""}
+              className="show-more-text"
+              anchorClass="my-anchor-css-class"
+              width={150}
+              truncatedEndingComponent={"..."}
             >
-              {/* {params.row.detail} */}
-            </Typography>
+              {params.row.body}
+            </ShowMoreText>
           </Box>
         );
       }
     },
     {
-      field: "isPublish",
-      headerName: "Publish",
+      field: 'col1',
+      headerName: 'Comments',
+      width: 150,
+      disableClickEventBubbling: false,
+      renderCell: (params) => {
+        return <ButtonWrapper><Link to={`/comments`}>
+        <button className="editBtn">Comment +100</button>
+      </Link></ButtonWrapper>
+        
+      }
+    },
+    {
+      field: "createdAt",
+      headerName: "Created At",
       width: 170
     },
     {
@@ -157,16 +212,25 @@ const PostList = (props) => {
       >
         Add new post
       </Button>
-      <DataGrid
-        rows={userData}
-        columns={columns}
-        // rowsPerPageOptions={[5, 10, 20]}
-        // pageSize={5}
-        // rowsPerPageOptions={[5]}
-        // checkboxSelection
-        // disableSelectionOnClick
-        rowHeight={80}
-      />
+
+        {
+         
+           _.isEmpty(datas.data) 
+           ?  <div><CircularProgress /></div> 
+           :  <DataGrid
+                rows={datas.data}
+                columns={columns}
+                // rowsPerPageOptions={[5, 10, 20]}
+                // pageSize={5}
+                // rowsPerPageOptions={[5]}
+                // checkboxSelection
+                // disableSelectionOnClick
+                rowHeight={80}
+              />
+
+        }
+
+     
 
 {/*      
       {openDialogDelete.isOpen && (

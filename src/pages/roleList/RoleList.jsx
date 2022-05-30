@@ -8,7 +8,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { DeleteOutline } from "@material-ui/icons";
 import { userRows } from "../../data";
 import { Link } from "react-router-dom";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { RoleContext } from "../../Store";
 
 import {
@@ -24,16 +24,30 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import CircularProgress from '@mui/material/CircularProgress';
+import Avatar from "@mui/material/Avatar";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import _ from "lodash"
+
+import { getList } from "../../components/provider/DataProvider";
+import Footer from "../home2/Footer";
 
 const RoleList = (props) => {
   let history = useHistory();
   // const [userData, setUserData] = useState(userRows);
   const [userData, setUserData] = useContext(RoleContext);
 
+  const [datas, setDatas] = useState({data: null, total: 0});
+
   const [openDialogDelete, setOpenDialogDelete] = useState({
     isOpen: false,
     id: ""
   });
+
+  useEffect(async()=>{
+    setDatas( await getList("roles", {}) )
+  }, [])
 
   const handleClickOpen = () => {
     // setOpen(true);
@@ -51,7 +65,7 @@ const RoleList = (props) => {
   };
 
   const columns = [
-    { field: "id", headerName: "ID", width: 100 },
+    // { field: "id", headerName: "ID", width: 100 },
     {
       field: "name",
       headerName: "Name",
@@ -64,6 +78,42 @@ const RoleList = (props) => {
       //     </UserWrapper>
       //   );
       // }
+    },
+    {
+      field: "description",
+      headerName: "Description",
+      width: 250,
+      renderCell: (params) => {
+        return (
+          <Box
+            sx={{
+              maxHeight: "inherit",
+              width: "100%",
+              whiteSpace: "initial",
+              lineHeight: "16px"
+            }}
+          >
+            <Typography
+              variant="body1"
+              gutterBottom
+              dangerouslySetInnerHTML={{
+                __html: params.row.description
+              }}
+            />
+            {/* <ShowMoreText
+              lines={2}
+              more={<ExpandMore />}
+              less={""}
+              className="show-more-text"
+              anchorClass="my-anchor-css-class"
+              width={150}
+              truncatedEndingComponent={"..."}
+            >
+              {params.row.description}
+            </ShowMoreText> */}
+          </Box>
+        );
+      }
     },
     {
       field: "action",
@@ -101,14 +151,17 @@ const RoleList = (props) => {
       >
         Add new role
       </Button>
-      <DataGrid
-        rows={userData}
-        columns={columns}
-        // pageSize={5}
-        // rowsPerPageOptions={[5]}
-        // checkboxSelection
-        // disableSelectionOnClick
-      />
+      
+
+      {
+         _.isEmpty(datas.data) 
+         ?  <div><CircularProgress /></div> 
+         :  <DataGrid
+              rows={datas.data}
+              columns={columns}
+            />
+      }
+
       {openDialogDelete.isOpen && (
         <Dialog
           open={openDialogDelete.isOpen}
@@ -139,6 +192,8 @@ const RoleList = (props) => {
           </DialogActions>
         </Dialog>
       )}
+
+      <Footer />
     </UserListContainer>
   );
 };

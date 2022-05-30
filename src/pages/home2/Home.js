@@ -17,6 +17,9 @@ import "react-image-lightbox/style.css";
 import Link from "@mui/material/Link";
 import _ from "lodash";
 import moment from "moment";
+import CircularProgress from '@mui/material/CircularProgress';
+
+
 import PanelComment from "./PanelComment";
 import PopupSnackbar from "./PopupSnackbar";
 import Footer from "./Footer";
@@ -26,6 +29,8 @@ import Detail from "./Detail";
 import { socket } from "../../SocketioClient";
 import DialogLogin from "./DialogLogin";
 import { getList } from "../../components/provider/DataProvider";
+
+import ReportDialog from "../../components/report"
 
 const images = [
   "//placekitten.com/1500/500",
@@ -37,8 +42,10 @@ const images = [
 const Home = (props) => {
   const [note, setNote] = useState([]);
 
-  const [datas, setDatas] = useState([]);
-  const [total, setTotal] = useState(0)
+  // const [datas, setDatas] = useState([]);
+  // const [total, setTotal] = useState(0)
+
+  const [datas, setDatas] = useState({data: null, total: 0});
 
   const navigate = useHistory();
   const [keywordSearch, setKeywordSearch] = useState("");
@@ -60,13 +67,16 @@ const Home = (props) => {
   const [anchorElSetting, setAnchorElSetting] = useState(null);
   const [anchorElShare, setAnchorElShare] = useState(null);
   const [snackbar, setSnackbar] = useState({open: false, message:""});
+  const [report, setReport] = useState({open: false, portId:""});
 
   useEffect(async() => {
     // setNote(notes);
 
-    let {data, total} = await getList("posts", {})
-    setDatas(data)
-    setTotal(total)
+    // let {data, total} = await getList("posts", {})
+    // setDatas(data)
+    // setTotal(total)
+
+    setDatas(await getList("posts", {}))
   }, []);
 
   const breakpoints = {
@@ -169,7 +179,11 @@ const Home = (props) => {
                 role: "listbox"
               }}
             >
-              <MenuItem onClick={handleAnchorElSettingClose}>
+              <MenuItem onClick={(e)=>{
+                handleAnchorElSettingClose()
+
+                setReport({open: true, portId:index})
+              }}>
                 Report
               </MenuItem>
             </Menu>
@@ -193,81 +207,98 @@ const Home = (props) => {
             }
           }}
         />
-    <Container>
-      <Masonry
-        breakpointCols={breakpoints}
-        className="my-masonry-grid"
-        columnClassName="my-masonry-grid_column"
-      >
-        {datas.map(
-          (n, index) => {
-            return (
-              <div key={n.id}>
-                <MasonryCard 
-                  n={n} 
-                  index={index} 
-                  onPanelComment={(data)=>{
-                    setPanelComment(data)
-                  }}
-                  onSnackbar={async(data)=>{
-                    // setSnackbar(data)
 
-                    await socket().emit('follow', {test: "1234"}, (values)=>{
-                      // console.log(error);
-                      console.log(values);
+        <div>
+          {
+            _.isEmpty(datas.data) 
+            ? <div><CircularProgress /></div> 
+            : 
+              <div>
+                <Container>
+                  <Masonry
+                    breakpointCols={breakpoints}
+                    className="my-masonry-grid"
+                    columnClassName="my-masonry-grid_column"
+                  >
+                    {datas.data.map(
+                      (n, index) => {
+                        return (
+                          <div key={n.id}>
+                            <MasonryCard 
+                              n={n} 
+                              index={index} 
+                              onPanelComment={(data)=>{
+                                setPanelComment(data)
+                              }}
+                              onSnackbar={async(data)=>{
+                                // setSnackbar(data)
 
-                      setSnackbar({open: true, message:"Follow"});
-                    });
-                  }}
-                  onLightbox={(data)=>{
-                    setLightbox(data)
-                  }}
+                                await socket().emit('follow', {test: "1234"}, (values)=>{
+                                  // console.log(error);
+                                  console.log(values);
 
-                  onAnchorElShareOpen={(index, e)=>{
-                    handleAnchorElShareOpen(index, e)
-                  }}
-                 
-                  onAnchorElSettingOpen={(index, e)=>{
-                    handleAnchorElSettingOpen(index, e)
-                  }}
+                                  setSnackbar({open: true, message:"Follow"});
+                                });
+                              }}
+                              onLightbox={(data)=>{
+                                setLightbox(data)
+                              }}
+
+                              onAnchorElShareOpen={(index, e)=>{
+                                handleAnchorElShareOpen(index, e)
+                              }}
+                            
+                              onAnchorElSettingOpen={(index, e)=>{
+                                handleAnchorElSettingOpen(index, e)
+                              }}
+                              />
+
+                              {menuShare(index)}
+                              {menuSetting(index)}
+
+                              
+                          </div>
+                        );
+                      }
+                    )}
+                  </Masonry>
+                </Container>
+
+                <Container sx={{ py: 2 }} maxWidth="xl">
+                  <Pagination
+                    page={page}
+                    onPageChange={(event, newPage) => {
+                      setPage(newPage);
+
+                      navigate.push({
+                        pathname: "/",
+                        search: "?sort=date&order=newest"
+                      });
+                    }}
+                    rowsPerPage={rowsPerPage}
+                    onRowsPerPageChange={(event) => {
+                      setRowsPerPage(parseInt(event.target.value, 10));
+                      setPage(0);
+
+                      navigate.push({
+                        pathname: "/",
+                        search: "?sort=date&order=newest"
+                      });
+                    }}
+                    count={datas.total}
                   />
+                </Container>
 
-                  {menuShare(index)}
-                  {menuSetting(index)}
+                {/* <ReportDialog /> */}
               </div>
-            );
           }
-        )}
-      </Masonry>
-    </Container>
+          
 
-    <Container sx={{ py: 2 }} maxWidth="xl">
-          <Pagination
-            page={page}
-            onPageChange={(event, newPage) => {
-              setPage(newPage);
+          
+        </div>
 
-              navigate.push({
-                pathname: "/",
-                search: "?sort=date&order=newest"
-              });
-            }}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={(event) => {
-              setRowsPerPage(parseInt(event.target.value, 10));
-              setPage(0);
-
-              navigate.push({
-                pathname: "/",
-                search: "?sort=date&order=newest"
-              });
-            }}
-            count={total}
-          />
-        </Container>
         <Footer />
-
-    </div>
+      </div>
 
       {snackbar.open && (
         <PopupSnackbar
@@ -326,6 +357,10 @@ const Home = (props) => {
           }}
         />
       )}
+
+      {
+        report.open && <ReportDialog open={report.open} portId={report.portId} onClose={()=>setReport({open: false, portId:""})}/>
+      }
     </div>
   );
 }

@@ -7,7 +7,7 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 import { DeleteOutline } from "@material-ui/icons";
 import { userRows } from "../../data";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { UserContext } from "../../Store";
 
@@ -18,6 +18,11 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import Typography from "@mui/material/Typography";
+import CircularProgress from '@mui/material/CircularProgress';
+import Avatar from "@mui/material/Avatar";
+import _ from "lodash"
+
+import { getList } from "../../components/provider/DataProvider";
 
 import Footer from "../home2/Footer";
 
@@ -26,10 +31,17 @@ const UserList = (props) => {
 
   // const [userData, setUserData] = useState(userRows);
   const [userData, setUserData] = useContext(UserContext);
+
+  const [datas, setDatas] = useState({data: null, total: 0});
+
   const [openDialogDelete, setOpenDialogDelete] = useState({
     isOpen: false,
     id: ""
   });
+
+  useEffect(async()=>{
+    setDatas( await getList("users", {}) )
+  }, [])
 
   const handleDelete = (id) => {
     setUserData(userData.filter((user) => user.id !== id));
@@ -41,25 +53,54 @@ const UserList = (props) => {
   };
 
   const columns = [
-    { field: "id", headerName: "ID", width: 100 },
     {
-      field: "user",
-      headerName: "User",
-      width: 170,
+      field: "image",
+      headerName: "Image",
+      width: 130,
       renderCell: (params) => {
+        console.log("params.row.image :", params.row.image)
+        if(params.row.image.length < 1){
+          return <Avatar
+                  sx={{
+                    height: 100,
+                    width: 100
+                  }}>A</Avatar>
+        }
         return (
-          <UserWrapper>
-            <img src={params.row.avatar} alt="" />
-            {params.row.userName}
-          </UserWrapper>
+          <div style={{ position: "relative" }}>
+            <Avatar
+              sx={{
+                height: 100,
+                width: 100
+              }}
+              variant="rounded"
+              alt="Example Alt"
+              src={params.row.image[0].base64}
+            />
+          </div>
         );
       }
     },
-    { field: "email", headerName: "Email", width: 130 },
+    { field: "displayName", headerName: "Display name", width: 150 },
+    { field: "username", headerName: "User name", width: 150 },
+    // {
+    //   field: "user",
+    //   headerName: "User",
+    //   width: 170,
+    //   renderCell: (params) => {
+    //     return (
+    //       <UserWrapper>
+    //         <img src={params.row.avatar} alt="" />
+    //         {params.row.userName}
+    //       </UserWrapper>
+    //     );
+    //   }
+    // },
+    { field: "email", headerName: "Email", width: 180 },
     {
-      field: "status",
-      headerName: "Status",
-      width: 130
+      field: "lastAccess",
+      headerName: "Last access",
+      width: 200
     },
     // {
     //   field: "transaction",
@@ -100,14 +141,16 @@ const UserList = (props) => {
       >
         Add new user
       </Button>
-      <DataGrid
-        rows={userData}
-        columns={columns}
-        // pageSize={5}
-        // rowsPerPageOptions={[5]}
-        // checkboxSelection
-        // disableSelectionOnClick
-      />
+
+      {
+         _.isEmpty(datas.data) 
+         ?  <div><CircularProgress /></div> 
+         :  <DataGrid
+              rows={datas.data}
+              columns={columns}
+            />
+      }
+      
 
       {openDialogDelete.isOpen && (
         <Dialog

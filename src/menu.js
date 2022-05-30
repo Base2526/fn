@@ -48,12 +48,12 @@ const MenuList = [
     Icon: <Timeline className="icon" />,
     Path: "/posts"
   },
-  {
-    Id: 3,
-    Name: "Comments",
-    Icon: <CommentIcon className="icon" />,
-    Path: "/comments"
-  },
+  // {
+  //   Id: 3,
+  //   Name: "Comments",
+  //   Icon: <CommentIcon className="icon" />,
+  //   Path: "/comments"
+  // },
   {
     Id: 4,
     Name: "Users",
